@@ -55,22 +55,4 @@ Instalador atualizado, versao NodeJS 20:
 ```
 https://github.com/launcherbr/instalador.git
 ```
-Notas Rápidas: </br>
-Requer servidor Ubuntu 20.04 LTS com ao menos 4 vcore e 8gb de ram.</br>
-Recomendamos Peramix, Contabo, e Hetzner</br>
-Não recomendamos Hostinger, Hostgator e Locaweb.</br>
-Evite latencia muito baixa e muito alta (servidor local e servidores na Europa)</br>
 
-Siga os arquivos de Instruções para instalação, você precisa ter acesso liberado ao Google Drive:
-
-```
-https://drive.google.com/drive/folders/16ZT6NnzD8kNBB18EpOYBGV4epWFJWWtZ?usp=drive_link
-```
-
-Confira no pdf aqui como gerar um webhook de retorno automático de pagamento da Efi.
-
-```
-https://drive.google.com/file/d/1Kjd-9NurK-7gw7_22-uIsZoB0MZ74YFp/view?usp=drivesdk
-```
-Personalizações:</br>
-As instruções para alteração de cores, logo, icones e nome da instalação estão nos arquivos de instruções.
