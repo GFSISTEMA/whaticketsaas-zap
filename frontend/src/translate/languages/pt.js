@@ -496,6 +496,7 @@ const messages = {
           users: "Usuários",
           settings: "Configurações",
           helps: "Ajuda",
+          suporte: "Suporte",
           messagesAPI: "API",
           schedules: "Agendamentos",
           campaigns: "Campanhas",
@@ -830,6 +831,7 @@ const messages = {
           greeting: "Mensagem de saudação",
           actions: "Ações",
           orderQueue: "Ordenação da fila (bot)",
+          descreva: "Teste",
         },
         buttons: {
           add: "Adicionar fila",
@@ -999,6 +1001,9 @@ const messages = {
           confirm: "Ok",
           cancel: "Cancelar",
         },
+      },
+      fatura:{
+        title:"Faturas"
       },
       messageOptionsMenu: {
         delete: "Deletar",

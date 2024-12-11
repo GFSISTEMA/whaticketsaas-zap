@@ -20,6 +20,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import CachedIcon from "@material-ui/icons/Cached";
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';  // Importar o ícone do WhatsApp
 
 import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
@@ -403,30 +404,42 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             )}
           </Typography>
 
-          <IconButton edge="start" onClick={toggleColorMode}>
+          <IconButton 
+            edge="start" 
+            onClick={toggleColorMode}
+            style={{ marginLeft: 8 }}
+          >
             {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
           </IconButton>
 
           <NotificationsVolume
             setVolume={setVolume}
             volume={volume}
+            style={{ marginLeft: 8 }}
           />
 
           <IconButton
             onClick={handleRefreshPage}
             aria-label={i18n.t("mainDrawer.appBar.refresh")}
             color="inherit"
+            style={{ marginLeft: 8 }}
           >
             <CachedIcon style={{ color: "white" }} />
           </IconButton>
 
-          {user.id && <NotificationsPopOver volume={volume} />}
+          <div style={{ marginLeft: 8 }}>
+            {user.id && <NotificationsPopOver volume={volume} />}
+          </div>
 
-          <AnnouncementsPopover />
+          <div style={{ marginLeft: 8 }}>
+            <AnnouncementsPopover />
+          </div>
 
-          <ChatPopover />
+          <div style={{ marginLeft: 8 }}>
+            <ChatPopover />
+          </div>
 
-          <div>
+          <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
             <IconButton
               aria-label="account of current user"
               aria-controls="menu-appbar"
@@ -455,8 +468,12 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               <MenuItem onClick={handleOpenUserModal}>
                 {i18n.t("mainDrawer.appBar.user.profile")}
               </MenuItem>
+              <MenuItem onClick={handleClickLogout}> {i18n.t("mainDrawer.appBar.user.logout")} </MenuItem>
+              <MenuItem onClick={() => window.open(`https://wa.me/${process.env.REACT_APP_NUMBER_SUPPORT}`, '_blank')}>
+                {i18n.t("mainDrawer.listItems.suporte")}
+              </MenuItem>
             </Menu>
-          </div>
+            </div>
         </Toolbar>
       </AppBar>
       <main className={classes.content}>
@@ -469,3 +486,4 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 };
 
 export default LoggedInLayout;
+
