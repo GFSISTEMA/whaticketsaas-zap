@@ -468,9 +468,11 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               <MenuItem onClick={handleOpenUserModal}>
                 {i18n.t("mainDrawer.appBar.user.profile")}
               </MenuItem>
-              <MenuItem onClick={handleClickLogout}> {i18n.t("mainDrawer.appBar.user.logout")} </MenuItem>
               <MenuItem onClick={() => window.open(`https://wa.me/${process.env.REACT_APP_NUMBER_SUPPORT}`, '_blank')}>
                 {i18n.t("mainDrawer.listItems.suporte")}
+              </MenuItem>
+              <MenuItem onClick={handleClickLogout}> 
+                {i18n.t("mainDrawer.appBar.user.logout")} 
               </MenuItem>
             </Menu>
             </div>
