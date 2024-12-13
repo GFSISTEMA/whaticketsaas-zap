@@ -95,9 +95,12 @@ const messages = {
               "Certifique-se de que seu celular esteja conectado à internet e tente novamente, ou solicite um novo QR Code",
           },
           qrcode: {
-            title: "Esperando leitura do QR Code",
-            content:
-              "Clique no botão 'QR CODE' e leia o QR Code com o seu celular para iniciar a sessão",
+            title: "Utilize o Whaticket com seu WhatsApp:",
+            step1: "1 - Abra o WhatsApp no seu celular",
+            step2: "2 - Toque em Mais opções no Android",
+            or: "ou em Configurações",
+            step3: "3 - Toque em Dispositivos conectados e, em seguida, em Conectar dispositivos",
+            step4: "4 - Aponte seu celular para essa tela para capturar o QR Code"
           },
           connected: {
             title: "Conexão estabelecida!",
@@ -509,9 +512,14 @@ const messages = {
           queueIntegration: "Integrações",
         },
         appBar: {
+          i18n: {
+            language: "Português",
+            language_short: "PT"
+          },
           notRegister:"Sem notificações",
           user: {
             profile: "Perfil",
+            language: "Idioma",
             logout: "Sair",
           },
         },

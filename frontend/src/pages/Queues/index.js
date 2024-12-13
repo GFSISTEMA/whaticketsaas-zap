@@ -189,7 +189,7 @@ const Queues = () => {
   <Typography variant="body1" style={{ color: '#128C7E' }}>
     <strong>Links Úteis:</strong>
     <br />
-    Videos de ajuda: <a href="https://chatapp.zapmychat.com/helps" style={{ color: '#25D366' }}>Ajuda</a>
+    Videos de ajuda: <a href="/helps" style={{ color: '#25D366' }}>Ajuda</a>
    </Typography>
 </Paper>
 
