@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     },
     leftSide: {
         flex: 1,
-        backgroundImage: "url(https://i.imgur.com/gctMttd.png)",
+        backgroundImage: "url(https://i.imgur.com/7Jdv8MT.jpeg)",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         display: 'flex',
