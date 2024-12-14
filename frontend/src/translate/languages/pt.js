@@ -1062,6 +1062,20 @@ const messages = {
         ERR_WAPP_GREETING_REQUIRED:
           "A mensagem de saudação é obrigatório quando há mais de uma fila.",
       },
+      paper: {
+        queues: {
+          notice: "Aviso: Para ativar a mensagem automática no ZapmyChat, adicione as filas e preencha os campos necessários. Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.",
+          usefulLinks: "Links Úteis:",
+          helpVideos: "Videos de ajuda",
+          help: "Ajuda"
+        },
+        quickmessages: {
+          notice: "Aviso: Após adicionar respostas rápidas, utilize-as nas conversas começando com / (barra) seguido da palavra, sem espaços.",
+          usefulLinks: "Links Úteis:",
+          helpVideos: "Videos de ajuda",
+          help: "Ajuda"
+        }
+      }
     },
   },
 };

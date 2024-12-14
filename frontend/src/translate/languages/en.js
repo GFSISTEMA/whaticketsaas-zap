@@ -404,9 +404,18 @@ const messages = {
 					"This color is already in use, pick another one.",
 				ERR_WAPP_GREETING_REQUIRED:
 					"Greeting message is required if there is more than one queue.",
+				},
+				paper: {
+				  queues: {
+					notice: "Aviso: Para ativar a mensagem automática no ZapmyChat, adicione as filas e preencha os campos necessários. Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.",
+					usefulLinks: "Links Úteis:",
+					helpVideos: "Videos de ajuda",
+					help: "Ajuda"
+				  }
+				}
+			  },
 			},
-		},
-	},
-};
-
-export { messages };
+		  };
+		  
+		  export { messages };
+		  

@@ -327,6 +327,28 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     colorMode.toggleColorMode();
   }
 
+  const getGreeting = () => {
+    const hour = moment().hour();
+    if (hour < 12) {
+      return "Bom dia";
+    } else if (hour < 18) {
+      return "Boa tarde";
+    } else {
+      return "Boa noite";
+    }
+  };
+
+  const daysUntilDueDate = () => {
+    if (user?.company?.dueDate) {
+      const dueDate = moment(user?.company?.dueDate);
+      const now = moment();
+      const diff = dueDate.diff(now, 'days');
+      const formattedDueDate = dueDate.format('DD/MM/YYYY');
+      return diff > 0 ? `(Ativo até ${formattedDueDate} - Faltam ${diff} dias)` : `(Ativo até ${formattedDueDate} - Vencido)`;
+    }
+    return '';
+  };
+
   if (loading) {
     return <BackdropLoading />;
   }
@@ -392,14 +414,14 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             noWrap
             className={classes.title}
           >
-            {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
+            {getGreeting()}
             {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
               <>
-                Olá <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! (Ativo até {dateToClient(user?.company?.dueDate)})
+                , <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! {daysUntilDueDate()}
               </>
             ) : (
               <>
-                Olá  <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
+                , <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
               </>
             )}
           </Typography>

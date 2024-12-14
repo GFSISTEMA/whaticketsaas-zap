@@ -181,22 +181,18 @@ const Queues = () => {
         queueId={selectedQueue?.id}
       />
       <Paper className={classes.redBox} variant="outlined" style={{ backgroundColor: '#DCF8C6' }}>
-  <Typography variant="body1" style={{ color: '#075E54' }}>
-    <strong>Aviso:</strong> Para ativar a mensagem automática no ZapmyChat, adicione as filas e preencha os campos necessários. 
-    Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.
-  </Typography>
-  {/* Links úteis */}
-  <Typography variant="body1" style={{ color: '#128C7E' }}>
-    <strong>Links Úteis:</strong>
-    <br />
-    Videos de ajuda: <a href="/helps" style={{ color: '#25D366' }}>Ajuda</a>
-   </Typography>
-</Paper>
+        <Typography variant="body1" style={{ color: '#075E54' }}>
+          {i18n.t("paper.queues.notice")}
+        </Typography>
+        <Typography variant="body1" style={{ color: '#128C7E' }}>
+          {i18n.t("paper.queues.usefulLinks")}
+          <br />
+          {i18n.t("paper.queues.helpVideos")}: <a href="/helps" style={{ color: '#25D366' }}>{i18n.t("paper.queues.help")}</a>
+        </Typography>
+      </Paper>
 
-
-
-<MainHeader>
-      <Title>{i18n.t("queues.title")}</Title>
+      <MainHeader>
+        <Title>{i18n.t("queues.title")}</Title>
         <MainHeaderButtonsWrapper>
           <Button
             variant="contained"
@@ -211,7 +207,7 @@ const Queues = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-			   <TableCell align="center">
+              <TableCell align="center">
                 {i18n.t("queues.table.id")}
               </TableCell>
               <TableCell align="center">
@@ -235,7 +231,7 @@ const Queues = () => {
             <>
               {queues.map((queue) => (
                 <TableRow key={queue.id}>
-				<TableCell align="center">{queue.id}</TableCell>
+                  <TableCell align="center">{queue.id}</TableCell>
                   <TableCell align="center">{queue.name}</TableCell>
                   <TableCell align="center">
                     <div className={classes.customTableCell}>
