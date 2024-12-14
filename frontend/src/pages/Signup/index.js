@@ -15,6 +15,8 @@ import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import InputMask from 'react-input-mask';
+import Paper from "@material-ui/core/Paper";
+
 import api from "../../services/api";
 import {
 	FormControl,
@@ -170,8 +172,15 @@ const SignUp = () => {
 			<CssBaseline />
 			<div className={classes.paper}>
 				<div>
-				<img style={{ margin: "0 auto", width: "80%" }} src={logoWithRandom} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} />
+					<img style={{ margin: "0 auto", width: "80%" }} src={logoWithRandom} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} />
 				</div>
+				<Paper className={classes.redBox} variant="outlined" style={{ backgroundColor: 'transparent' }}>
+					<Typography variant="body1" style={{ color: '#075E54' }}>
+						{i18n.t("paper.signup.notice")}
+					</Typography>
+					
+					
+				</Paper>
 				{/*<Typography component="h1" variant="h5">
 					{i18n.t("signup.title")}
 				</Typography>*/}

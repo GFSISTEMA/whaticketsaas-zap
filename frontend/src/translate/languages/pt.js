@@ -1074,7 +1074,10 @@ const messages = {
           usefulLinks: "Links Úteis:",
           helpVideos: "Videos de ajuda",
           help: "Ajuda"
-        }
+        },
+        signup: {
+          notice: "Ao se cadastrar, você terá 7 dias de teste grátis para experimentar o sistema.  Para dúvidas, entre em contato com o suporte.",
+          }
       }
     },
   },
