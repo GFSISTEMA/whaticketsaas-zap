@@ -66,14 +66,14 @@ const useStyles = makeStyles(theme => ({
 
 const UserSchema = Yup.object().shape({
 	name: Yup.string()
-		.min(2, "Too Short!")
-		.max(50, "Too Long!")
-		.required("Required"),
-	password: Yup.string().min(5, "Too Short!").max(50, "Too Long!"),
+		.min(2, "Curto demais!")
+		.max(50, "Longo demais!")
+		.required("Requerido"),
+	password: Yup.string().min(5, "Curto demais!").max(50, "Longo demais!"),
 	email: Yup.string()
-		.email("Invalid email")
-		.required("Required")
-		.matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email cannot contain spaces"),
+		.email("Email inválido")
+		.required("Requerido")
+		.matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "O email não pode conter espaços"),
 });
 
 const SignUp = () => {
