@@ -128,7 +128,7 @@ export const initWASocket = async (whatsapp: Whatsapp): Promise<Session> => {
           logger: loggerBaileys,
           printQRInTerminal: false,
           browser: [
-            process.env.BROWSER_CLIENT || "Whaticket",
+            process.env.BROWSER_CLIENT || "ZapmyChat",
             process.env.BROWSER_NAME || "Chrome",
             process.env.BROWSER_VERSION || "10.0"
           ],

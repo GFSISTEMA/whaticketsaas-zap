@@ -95,7 +95,7 @@ const messages = {
               "Certifique-se de que seu celular esteja conectado à internet e tente novamente, ou solicite um novo QR Code",
           },
           qrcode: {
-            title: "Utilize o Whaticket com seu WhatsApp:",
+            title: "Utilize o ZapmyChat com seu WhatsApp:",
             step1: "1 - Abra o WhatsApp no seu celular",
             step2: "2 - Toque em Mais opções no Android",
             or: "ou em Configurações",

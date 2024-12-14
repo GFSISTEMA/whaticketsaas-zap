@@ -182,7 +182,7 @@ const Queues = () => {
       />
       <Paper className={classes.redBox} variant="outlined" style={{ backgroundColor: '#DCF8C6' }}>
   <Typography variant="body1" style={{ color: '#075E54' }}>
-    <strong>Aviso:</strong> Para ativar a mensagem automática no Whaticket, adicione as filas e preencha os campos necessários. 
+    <strong>Aviso:</strong> Para ativar a mensagem automática no ZapmyChat, adicione as filas e preencha os campos necessários. 
     Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.
   </Typography>
   {/* Links úteis */}
