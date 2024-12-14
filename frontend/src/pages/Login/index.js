@@ -91,7 +91,8 @@ const Login = () => {
     const [viewregister, setviewregister] = useState('disabled');
 
     const handleChangeInput = e => {
-        setUser({ ...user, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setUser({ ...user, [name]: value.trim() });
     };
 
     useEffect(() => {
