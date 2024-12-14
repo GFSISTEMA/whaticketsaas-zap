@@ -160,6 +160,10 @@ const SignUp = () => {
   
     const logoWithRandom = `${logo}?r=${randomValue}`;
 
+	function validarTelefone(telefone) {
+		const regex = /^\d{11}$/; // Verifica se o telefone contém exatamente 11 dígitos
+		return regex.test(telefone);
+	}
 
 	return (
 		<Container component="main" maxWidth="xs">
@@ -238,8 +242,16 @@ const SignUp = () => {
 											{...field}
 											variant="outlined"
 											fullWidth
-											label="DDD988888888"
-											inputProps={{ maxLength: 11 }} // Definindo o limite de caracteres
+											label="(XX) X XXXX-XXXX | Preencha apenas números"
+											inputProps={{ 
+												maxLength: 11,
+												onKeyPress: (e) => {
+													// Allow only numbers
+													if (!/[0-9]/.test(e.key)) {
+														e.preventDefault();
+													}
+												}
+											}}
 										/>
 									)}
 								</Field>
