@@ -27,6 +27,10 @@ import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 import toastError from "../../errors/toastError";
 import QueueSelect from "../QueueSelect";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy, faGears } from "@fortawesome/free-solid-svg-icons";
+import { Delete } from "@material-ui/icons";
+import IconButton from "@material-ui/core/IconButton";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -163,6 +167,21 @@ const whatsappData = {
     setWhatsApp(initialState);
 	  setSelectedQueueId(null);
     setSelectedQueueIds([]);
+  };
+
+  const copyToken = () => {
+    navigator.clipboard.writeText(whatsApp.token);
+    toast.success(i18n.t("whatsappModal.copytoken"));
+  };
+
+  const deleteToken = () => {
+    setWhatsApp(prev => ({ ...prev, token: "" }));
+  };
+
+  const generateToken = () => {
+    const newToken = Math.random().toString(36).substring(2) + 
+                    Math.random().toString(36).substring(2);
+    setWhatsApp(prev => ({ ...prev, token: newToken }));
   };
 
   return (
@@ -306,8 +325,41 @@ const whatsappData = {
                     type="token"
                     fullWidth
                     name="token"
-                    variant="outlined"
+                    variant="standard"
                     margin="dense"
+                    InputProps={{
+                      endAdornment: (
+                        <>
+                          {values.token && (
+                            <>
+                              <IconButton
+                                size="small"
+                                color="default"
+                                onClick={copyToken}
+                              >
+                                <FontAwesomeIcon icon={faCopy} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                color="default"
+                                onClick={deleteToken}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </>
+                          )}
+                          {!values.token && (
+                            <IconButton
+                              size="small"
+                              color="default"
+                              onClick={generateToken}
+                            >
+                              <FontAwesomeIcon icon={faGears} />
+                            </IconButton>
+                          )}
+                        </>
+                      ),
+                    }}
                   />
                 </div>
                 <QueueSelect

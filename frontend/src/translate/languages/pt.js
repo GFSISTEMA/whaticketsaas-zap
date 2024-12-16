@@ -122,6 +122,7 @@ const messages = {
         },
       },
       whatsappModal: {
+        copytoken: "Token copiado para área de transferência!",
         title: {
           add: "Adicionar WhatsApp",
           edit: "Editar WhatsApp",
