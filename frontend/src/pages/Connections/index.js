@@ -345,15 +345,6 @@ const Connections = () => {
           					>
             					{i18n.t("REINICIAR CONEXÕES")}
           					</Button>
-							  <Button
-								variant="contained"
-								color="primary"
-								component="a"
-								href={`https://wa.me/${process.env.REACT_APP_NUMBER_SUPPORT}`}
-								target="_blank"
-								>
-								{i18n.t("SUPORTE")}
-								</Button>
 							</>
 						)}
 					/>

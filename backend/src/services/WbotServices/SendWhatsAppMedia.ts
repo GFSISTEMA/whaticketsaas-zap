@@ -15,6 +15,7 @@ import formatBody from "../../helpers/Mustache";
 interface Request {
   media: Express.Multer.File;
   ticket: Ticket;
+  companyId?: number;
   body?: string;
   isForwarded?: boolean;  
 }
@@ -23,11 +24,11 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 
 const publicFolder = path.resolve(__dirname, "..", "..", "..", "public");
 
-const processAudio = async (audio: string): Promise<string> => {
-  const outputAudio = `${publicFolder}/${new Date().getTime()}.mp3`;
+const processAudio = async (audio: string, companyId: string): Promise<string> => {
+  const outputAudio = `${publicFolder}/company${companyId}/${new Date().getTime()}.ogg`;
   return new Promise((resolve, reject) => {
     exec(
-      `${ffmpegPath} -i ${audio} -vn -ab 128k -ar 44100 -f ipod ${outputAudio} -y`,
+      `${ffmpegPath} -i ${audio} -vn -c:a libopus -b:a 128k ${outputAudio} -y`,
       (error, _stdout, _stderr) => {
         if (error) reject(error);
         fs.unlinkSync(audio);
@@ -37,8 +38,8 @@ const processAudio = async (audio: string): Promise<string> => {
   });
 };
 
-const processAudioFile = async (audio: string): Promise<string> => {
-  const outputAudio = `${publicFolder}/${new Date().getTime()}.mp3`;
+const processAudioFile = async (audio: string, companyId: string): Promise<string> => {
+  const outputAudio = `${publicFolder}/company${companyId}/${new Date().getTime()}.mp3`;
   return new Promise((resolve, reject) => {
     exec(
       `${ffmpegPath} -i ${audio} -vn -ar 44100 -ac 2 -b:a 192k ${outputAudio}`,
@@ -55,6 +56,7 @@ const processAudioFile = async (audio: string): Promise<string> => {
 export const getMessageOptions = async (
   fileName: string,
   pathMedia: string,
+  companyId?: string,
   body: string = " "
 ): Promise<any> => {
   const mimeType = mime.lookup(pathMedia);
@@ -75,12 +77,12 @@ export const getMessageOptions = async (
       };
     } else if (typeMessage === "audio") {
       const typeAudio = true; //fileName.includes("audio-record-site");
-      const convert = await processAudio(pathMedia);
+      const convert = await processAudio(pathMedia, companyId);
       if (typeAudio) {
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: "audio/mp4",
-          ptt: true
+		  mimetype: "audio/ogg; codecs=opus",
+		  ptt: true, // Certifique-se de que PTT está definido corretamente
         };
       } else {
         options = {
@@ -127,6 +129,7 @@ const SendWhatsAppMedia = async ({
 }: Request): Promise<WAMessage> => {
   try {
     const wbot = await GetTicketWbot(ticket);
+	const companyId = ticket.companyId.toString();
 
     const pathMedia = media.path;
     const typeMessage = media.mimetype.split("/")[0];
@@ -136,51 +139,44 @@ const SendWhatsAppMedia = async ({
     if (typeMessage === "video") {
       options = {
         video: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
-        fileName: media.originalname,
-        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+        caption: body,
+        fileName: media.originalname.replace('/', '-')
         // gifPlayback: true
       };
     } else if (typeMessage === "audio") {
       const typeAudio = media.originalname.includes("audio-record-site");
       if (typeAudio) {
-        const convert = await processAudio(media.path);
+        const convert = await processAudio(media.path, companyId);
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: "audio/mpeg",
-          ptt: true,
-          contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+          mimetype: typeAudio ? "audio/mp4" : media.mimetype,
+          ptt: true
         };
       } else {
-        const convert = await processAudio(media.path);
+        const convert = await processAudioFile(media.path, companyId);
         options = {
           audio: fs.readFileSync(convert),
-          mimetype: "audio/mpeg",
-          ptt: true,
-          contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+          mimetype: typeAudio ? "audio/mp4" : media.mimetype
         };
       }
     } else if (typeMessage === "document" || typeMessage === "text") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
-        fileName: media.originalname,
-        mimetype: media.mimetype,
-        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+        caption: body,
+        fileName: media.originalname.replace('/', '-'),
+        mimetype: media.mimetype
       };
     } else if (typeMessage === "application") {
       options = {
         document: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
-        fileName: media.originalname,
-        mimetype: media.mimetype,
-        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+        caption: body,
+        fileName: media.originalname.replace('/', '-'),
+        mimetype: media.mimetype
       };
     } else {
       options = {
         image: fs.readFileSync(pathMedia),
-        caption: bodyMessage,
-        contextInfo: { forwardingScore: isForwarded ? 2 : 0, isForwarded: isForwarded }
+        caption: body
       };
     }
 

@@ -95,12 +95,9 @@ const messages = {
               "Certifique-se de que seu celular esteja conectado à internet e tente novamente, ou solicite um novo QR Code",
           },
           qrcode: {
-            title: "Utilize o ZapmyChat com seu WhatsApp:",
-            step1: "1 - Abra o WhatsApp no seu celular",
-            step2: "2 - Toque em Mais opções no Android",
-            or: "ou em Configurações",
-            step3: "3 - Toque em Dispositivos conectados e, em seguida, em Conectar dispositivos",
-            step4: "4 - Aponte seu celular para essa tela para capturar o QR Code"
+            title: "Esperando leitura do QR Code",
+            content:
+              "Clique no botão 'QR CODE' e leia o QR Code com o seu celular para iniciar a sessão",
           },
           connected: {
             title: "Conexão estabelecida!",
@@ -122,7 +119,6 @@ const messages = {
         },
       },
       whatsappModal: {
-        copytoken: "Token copiado para área de transferência!",
         title: {
           add: "Adicionar WhatsApp",
           edit: "Editar WhatsApp",
@@ -500,11 +496,11 @@ const messages = {
           users: "Usuários",
           settings: "Configurações",
           helps: "Ajuda",
-          suporte: "Suporte",
           messagesAPI: "API",
           schedules: "Agendamentos",
           campaigns: "Campanhas",
           annoucements: "Informativos",
+		  logplw:"Atualizações",
           chats: "Chat Interno",
           financeiro: "Financeiro",
           files: "Lista de arquivos",
@@ -513,14 +509,9 @@ const messages = {
           queueIntegration: "Integrações",
         },
         appBar: {
-          i18n: {
-            language: "Português",
-            language_short: "PT"
-          },
           notRegister:"Sem notificações",
           user: {
             profile: "Perfil",
-            language: "Idioma",
             logout: "Sair",
           },
         },
@@ -840,7 +831,6 @@ const messages = {
           greeting: "Mensagem de saudação",
           actions: "Ações",
           orderQueue: "Ordenação da fila (bot)",
-          descreva: "Teste",
         },
         buttons: {
           add: "Adicionar fila",
@@ -915,7 +905,7 @@ const messages = {
         table: {
           name: "Nome",
           color: "Cor",
-          tickets: "Registros Tagdos",
+          tickets: "Registros Tagueados",
           actions: "Ações",
         },
         buttons: {
@@ -1011,9 +1001,6 @@ const messages = {
           cancel: "Cancelar",
         },
       },
-      fatura:{
-        title:"Faturas"
-      },
       messageOptionsMenu: {
         delete: "Deletar",
 		reactionSuccess: "Reação add",
@@ -1062,24 +1049,8 @@ const messages = {
           "Esta cor já está em uso, escolha outra.",
         ERR_WAPP_GREETING_REQUIRED:
           "A mensagem de saudação é obrigatório quando há mais de uma fila.",
+        ERR_CHECK_NUMBER: "Número inválido. Verifique o número e tente novamente.",
       },
-      paper: {
-        queues: {
-          notice: "Aviso: Para ativar a mensagem automática no ZapmyChat, adicione as filas e preencha os campos necessários. Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.",
-          usefulLinks: "Links Úteis:",
-          helpVideos: "Videos de ajuda",
-          help: "Ajuda"
-        },
-        quickmessages: {
-          notice: "Aviso: Após adicionar respostas rápidas, utilize-as nas conversas começando com / (barra) seguido da palavra, sem espaços.",
-          usefulLinks: "Links Úteis:",
-          helpVideos: "Videos de ajuda",
-          help: "Ajuda"
-        },
-        signup: {
-          notice: "Ao se cadastrar, você terá 7 dias de teste grátis para experimentar o sistema.  Para dúvidas, entre em contato com o suporte.",
-          }
-      }
     },
   },
 };

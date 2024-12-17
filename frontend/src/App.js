@@ -85,6 +85,7 @@ const App = () => {
 				boxticket: mode === "light" ? "#EEE" : "#666",
 				campaigntab: mode === "light" ? "#ededed" : "#666",
 				mediainput: mode === "light" ? "#ededed" : "#1c1c1c",
+				contadordash: mode == "light" ? "#fff" : "#fff",
             },
             mode,
         },

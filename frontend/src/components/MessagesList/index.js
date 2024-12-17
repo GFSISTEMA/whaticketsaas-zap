@@ -22,7 +22,6 @@ import {
   GetApp,
   Reply,
 } from "@material-ui/icons";
-
 import AudioModal from "../AudioModal";
 import MarkdownWrapper from "../MarkdownWrapper";
 import ModalImageCors from "../ModalImageCors";
@@ -284,112 +283,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "inherit",
     padding: 10,
   },
- '@global': {
-    '@keyframes wave': {
-      '0%, 60%, 100%': {
-        transform: 'initial',
-      },
-      '30%': {
-        transform: 'translateY(-15px)',
-      },
-    },
-    '@keyframes quiet': {
-      '25%': {
-        transform: 'scaleY(.6)'
-      },
-      '50%': {
-        transform: 'scaleY(.4)',
-      },
-      '75%': {
-        transform: 'scaleY(.8)',
-      }
-    },
-    '@keyframes normal': {
-      '25%': {
-        transform: 'scaleY(.1)'
-      },
-      '50%': {
-        transform: 'scaleY(.4)',
-      },
-      '75%': {
-        transform: 'scaleY(.6)',
-      }
-    },
-    '@keyframes loud': {
-      '25%': {
-        transform: 'scaleY(1)'
-      },
-      '50%': {
-        transform: 'scaleY(.4)',
-      },
-      '75%': {
-        transform: 'scaleY(1.2)',
-      }
-    },
-  },
-  wave: {
-    position: 'relative',
-    textAlign: 'center',
-    height: "30px",
-    marginTop: "10px",
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
-  dot: {
-    display: "inline-block",
-    width: "7px",
-    height: "7px",
-    borderRadius: "50%",
-    marginRight: "3px",
-    background: theme.mode === 'light' ? "#303030" : "#ffffff",
-    animation: "wave 1.3s linear infinite",
-    "&:nth-child(2)": {
-      animationDelay: "-1.1s",
-    },
-    "&:nth-child(3)": {
-      animationDelay: "-0.9s",
-    }
-  },
-
-  wavebarsContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    height: "30px",
-    marginTop: "5px",
-    marginBottom: "5px",
-    marginLeft: "auto",
-    marginRight: "auto",
-    "--boxSize": "5px",
-    "--gutter": "4px",
-    width: "calc((var(--boxSize) + var(--gutter)) * 5)",
-  },
-
-  wavebars: {
-    transform: "scaleY(.4)",
-    height: "100%",
-    width: "var(--boxSize)",
-    animationDuration: "1.2s",
-    backgroundColor: theme.mode === 'light' ? "#303030" : "#ffffff",
-    animationTimingFunction: 'ease-in-out',
-    animationIterationCount: 'infinite',
-    borderRadius: '8px',
-  },
-
-  wavebar1: {
-    animationName: 'quiet'
-  },
-  wavebar2: {
-    animationName: 'normal'
-  },
-  wavebar3: {
-    animationName: 'quiet'
-  },
-  wavebar4: {
-    animationName: 'loud'
-  },
-  wavebar5: {
-    animationName: 'quiet'
-  }  
 }));
 
 const reducer = (state, action) => {
@@ -447,7 +340,6 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
   const [loading, setLoading] = useState(false);
   const lastMessageRef = useRef();
   const scrollRef = useRef();
-    const [contactPresence, setContactPresence] = useState("available");
 
   const [selectedMessage, setSelectedMessage] = useState({});
   const [anchorEl, setAnchorEl] = useState(null);
@@ -519,12 +411,6 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
         dispatch({ type: "UPDATE_MESSAGE", payload: data.message });
       }
     });
-	
-	    socket.on(`company-${companyId}-contact`, (data) => {
-      if (data?.contact?.id === ticket.contact.id && data.action === "update") {
-        setContactPresence(data?.contact?.presence || "available");
-      }
-    });
 
     return () => {
       socket.disconnect();
@@ -576,7 +462,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
     setAnchorEl(null);
   };
 
-  const checkMessageMedia = (message) => {
+ const checkMessageMedia = (message) => {
     console.log(message)
     if (message.mediaType === "locationMessage" && message.body.split('|').length >= 2) {
       let locationParts = message.body.split('|')
@@ -608,44 +494,8 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
           }
         }
         // console.log(message)
-        return <VCardPreview contact={contact} numbers={obj[0].number} />
-      }
-      /* else if (message.mediaType === "vcard") {
-        let array = message.body.split("\n");
-        let obj = [];
-        let contact = "";
-        for (let index = 0; index < array.length; index++) {
-          const v = array[index];
-          let values = v.split(":");
-          for (let ind = 0; ind < values.length; ind++) {
-            if (values[ind].indexOf("+") !== -1) {
-              obj.push({ number: values[ind] });
-            }
-            if (values[ind].indexOf("FN") !== -1) {
-              contact = values[ind + 1];
-            }
-          }
-        }
-        return <VcardPreview contact={contact} numbers={obj[0].number} />
-      } */
-      /*else if (message.mediaType === "multi_vcard") {
-        console.log("multi_vcard")
-        console.log(message)
-        
-        if(message.body !== null && message.body !== "") {
-          let newBody = JSON.parse(message.body)
-          return (
-            <>
-              {
-              newBody.map(v => (
-                <VcardPreview contact={v.name} numbers={v.number} />
-              ))
-              }
-            </>
-          )
-        } else return (<></>)
-      }*/        
-      else
+        return
+      } else
   
         if (message.mediaType === "image") {
           return <ModalImageCors imageUrl={message.mediaUrl} />;
@@ -808,8 +658,7 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
           [classes.quotedContainerRight]: message.fromMe,
         })}
       >
-        
-      <span
+        <span
           className={clsx(classes.quotedSideColorLeft, {
             [classes.quotedSideColorRight]: message.quotedMsg?.fromMe,
           })}
@@ -961,7 +810,11 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                 {(message.mediaUrl || message.mediaType === "locationMessage" || message.mediaType === "vcard" || message.mediaType === "contactMessage"
                   //|| message.mediaType === "multi_vcard" 
                 ) && checkMessageMedia(message)}
-                <div className={classes.textContentItem}>
+                <div
+                className={clsx(classes.textContentItem, {
+                  [classes.textContentItemDeleted]: message.isDeleted,
+                })}
+              >
                   {message.quotedMsg && renderQuotedMessage(message)}
                   {message.mediaType !== "reactionMessage" && (
                     <MarkdownWrapper>
@@ -1056,30 +909,16 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
                   {message.mediaType !== "reactionMessage" && message.mediaType !== "locationMessage" && (
                     <MarkdownWrapper>{message.body}</MarkdownWrapper>
                   )}
-                  {message.quotedMsg && message.mediaType === "reactionMessage" && message.body && (
+                  {message.quotedMsg && message.mediaType === "reactionMessage" && (
                     <>
-                      <span style={{ marginLeft: "0px", display: 'flex', alignItems: 'center' }}>
+                      <span style={{ marginLeft: "0px" }}>
                         <MarkdownWrapper>
-                          {"_*" + (message.fromMe ? 'Você' : (message?.contact?.name ?? 'Contato')) + "*_ reagiu... "}
+                          {"Você reagiu... " + message.body}
                         </MarkdownWrapper>
-                        <Badge 
-                          className={classes.badge}
-                          overlap="circular"
-                          anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                          }}
-                          badgeContent={
-                            <span style={{ fontSize: "1.2em", marginTop: "0", marginLeft: "5px" }}>
-                              {message.body}
-                            </span>
-                          }
-                        >
-                        </Badge>
                       </span>
                     </>
                   )}
-                  
+                
                 
                   <span className={classes.timestamp}>
                   {message.isEdited ? "Editada " + format(parseISO(message.createdAt), "HH:mm") : format(parseISO(message.createdAt), "HH:mm")}
@@ -1110,28 +949,8 @@ const MessagesList = ({ ticket, ticketId, isGroup }) => {
         className={classes.messagesList}
         onScroll={handleScroll}
       >
-      {messagesList.length > 0 ? renderMessages() : []}
-      {contactPresence === "composing" && (
-        <div className={classes.messageLeft}>
-          <div className={classes.wave}>
-              <span className={classes.dot}></span>
-              <span className={classes.dot}></span>
-              <span className={classes.dot}></span>
-          </div>
-        </div>
-      )}
-      {contactPresence === "recording" && (
-        <div className={classes.messageLeft}>
-          <div className={classes.wavebarsContainer}>
-              <div className={clsx(classes.wavebars, classes.wavebar1)}></div>
-              <div className={clsx(classes.wavebars, classes.wavebar2)}></div>
-              <div className={clsx(classes.wavebars, classes.wavebar3)}></div>
-              <div className={clsx(classes.wavebars, classes.wavebar4)}></div>
-              <div className={clsx(classes.wavebars, classes.wavebar5)}></div>
-          </div>
-        </div>
-      )}
-    </div>
+        {messagesList.length > 0 ? renderMessages() : []}
+      </div>
       {loading && (
         <div>
           <CircularProgress className={classes.circleLoading} />

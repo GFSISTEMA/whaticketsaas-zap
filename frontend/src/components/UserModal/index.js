@@ -23,8 +23,6 @@ import {
   } from '@material-ui/core';
   
 import { Visibility, VisibilityOff } from '@material-ui/icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGears } from '@fortawesome/free-solid-svg-icons';
 
 import { makeStyles } from "@material-ui/core/styles";
 import { green } from "@material-ui/core/colors";
@@ -135,16 +133,6 @@ const UserModal = ({ open, onClose, userId }) => {
 		handleClose();
 	};
 
-	const generateRandomPassword = () => {
-		const length = 10;
-		const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-		let password = "";
-		for (let i = 0; i < length; i++) {
-			password += charset.charAt(Math.floor(Math.random() * charset.length));
-		}
-		return password;
-	};
-
 	return (
 		<div className={classes.root}>
 			<Dialog
@@ -170,7 +158,7 @@ const UserModal = ({ open, onClose, userId }) => {
 						}, 400);
 					}}
 				>
-					{({ touched, errors, isSubmitting, setFieldValue }) => (
+					{({ touched, errors, isSubmitting }) => (
 						<Form>
 							<DialogContent dividers>
 								<div className={classes.multFieldLine}>
@@ -203,16 +191,6 @@ const UserModal = ({ open, onClose, userId }) => {
 												onClick={() => setShowPassword((e) => !e)}
 											>
 												{showPassword ? <VisibilityOff /> : <Visibility />}
-											</IconButton>
-											<IconButton
-												size="small"
-												color="default"
-												onClick={() => {
-													const newPassword = generateRandomPassword();
-													setFieldValue('password', newPassword);
-												}}
-											>
-												<FontAwesomeIcon icon={faGears} />
 											</IconButton>
 											</InputAdornment>
 										)

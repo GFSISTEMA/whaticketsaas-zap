@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";  // Import useState
 import { useParams } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, useTheme } from "@material-ui/core/styles"; // Importando useTheme
 
 import TicketsManager from "../../components/TicketsManagerTabs/";
 import Ticket from "../../components/Ticket/";
@@ -44,12 +44,15 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-const logo = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/login.png`;
-const randomValue = Math.random(); // Generate a random number
-  
-const logoWithRandom = `${logo}?r=${randomValue}`;
-
 const TicketsCustom = () => {
+	// Initialize useTheme and useState inside the component
+	const theme = useTheme();
+	const [logoImg, setLogoImg] = useState(
+		theme.palette.type === "light"
+			? `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/interno.png`
+			: `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/logo_w.png`
+	);
+
 	const classes = useStyles();
 	const { ticketId } = useParams();
 
@@ -67,10 +70,16 @@ const TicketsCustom = () => {
 							</>
 						) : (
 							<Paper square variant="outlined" className={classes.welcomeMsg}>
-							<div>
-							<center><img style={{ margin: "0 auto", width: "80%" }} src={logoWithRandom} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} /></center>
-							</div>
-							{/*<span>{i18n.t("chat.noTicketMessage")}</span>*/}
+								<div>
+									<center>
+										<img
+											style={{ margin: "0 auto", width: "80%" }}
+											src={`${logoImg}?r=${Math.random()}`}
+											alt={`${process.env.REACT_APP_NAME_SYSTEM}`}
+										/>
+									</center>
+								</div>
+								{/* <span>{i18n.t("chat.noTicketMessage")}</span> */}
 							</Paper>
 						)}
 					</Grid>

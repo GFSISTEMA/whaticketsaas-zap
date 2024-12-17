@@ -9,7 +9,9 @@ import Message from "../models/Message";
 import Queue from "../models/Queue";
 import User from "../models/User";
 import Whatsapp from "../models/Whatsapp";
+import { lookup } from 'mime-types';
 import { isNil } from "lodash";
+import QuickMessage from "../models/QuickMessage";
 import CreateOrUpdateContactService from "../services/ContactServices/CreateOrUpdateContactService";
 import SendWhatsAppReaction from "../services/WbotServices/SendWhatsAppReaction";
 import ListMessagesService from "../services/MessageServices/ListMessagesService";
@@ -21,6 +23,7 @@ import DeleteWhatsAppMessage from "../services/WbotServices/DeleteWhatsAppMessag
 import GetProfilePicUrl from "../services/WbotServices/GetProfilePicUrl";
 import ShowContactService from "../services/ContactServices/ShowContactService";
 import SendWhatsAppMedia from "../services/WbotServices/SendWhatsAppMedia";
+//import SendWhatsAppMediaInternal from "../services/WbotServices/SendWhatsAppMediaInternal";
 import path from "path";
 import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
 import EditWhatsAppMessage from "../services/WbotServices/EditWhatsAppMessage";
@@ -331,7 +334,7 @@ export const forwardMessage = async (
 
     const publicFolder = path.join(__dirname, '..', '..', '..', 'backend', 'public');
 
-    const filePath = path.join(publicFolder, fileName);
+    const filePath = path.join(publicFolder, `company${createTicket.companyId}`, fileName)
 
     const mediaSrc = {
       fieldname: 'medias',

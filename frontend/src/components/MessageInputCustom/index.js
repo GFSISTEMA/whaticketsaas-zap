@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 20,
     flex: 1,
   },
+ 
 
   messageInput: {
     paddingLeft: 10,
@@ -93,7 +94,7 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#eee",
+    backgroundColor: theme.palette.inputdigita,
     borderTop: "1px solid rgba(0, 0, 0, 0.12)",
   },
 
@@ -368,24 +369,29 @@ const CustomInput = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (
-      isString(inputMessage) &&
-      !isEmpty(inputMessage) &&
-      inputMessage.length > 1
-    ) {
-      const firstWord = inputMessage.charAt(0);
-      setPopupOpen(firstWord.indexOf("/") > -1);
+useEffect(() => {
+  if (
+    isString(inputMessage) &&
+    !isEmpty(inputMessage) &&
+    inputMessage.length > 0
+  ) {
+    const firstChar = inputMessage.charAt(0);
+    setPopupOpen(firstChar === "/");
 
-      const filteredOptions = quickMessages.filter(
-        (m) => m.label.indexOf(inputMessage) > -1
+    if (firstChar === "/") {
+      const filteredOptions = quickMessages.filter((m) =>
+        m.label.toLowerCase().startsWith(inputMessage.slice(1).toLowerCase())
       );
       setOptions(filteredOptions);
     } else {
-      setPopupOpen(false);
+      setOptions([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputMessage]);
+  } else {
+    setPopupOpen(false);
+    setOptions([]);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [inputMessage]);
 
   const onKeyPress = (e) => {
     if (loading || e.shiftKey) return;

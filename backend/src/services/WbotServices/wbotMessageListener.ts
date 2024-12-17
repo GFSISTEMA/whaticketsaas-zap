@@ -23,18 +23,18 @@ import Contact from "../../models/Contact";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import { Mutex } from "async-mutex";
-import ffmpeg from "fluent-ffmpeg";
+
 import {
   AudioConfig,
   SpeechConfig,
   SpeechSynthesizer
 } from "microsoft-cognitiveservices-speech-sdk";
 import moment from "moment";
-//import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
-import OpenAI from "openai";
+import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
 import { Op } from "sequelize";
 import { debounce } from "../../helpers/Debounce";
 import formatBody from "../../helpers/Mustache";
+import ffmpeg from "fluent-ffmpeg";
 import { cacheLayer } from "../../libs/cache";
 import { getIO } from "../../libs/socket";
 import { Store } from "../../libs/store";
@@ -65,6 +65,10 @@ import { SimpleObjectCache } from "../../helpers/simpleObjectCache";
 import SendWhatsAppMessage from "./SendWhatsAppMessage";
 import { getMessageOptions } from "./SendWhatsAppMedia";
 
+
+import ffmpegPath from 'ffmpeg-static';
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const request = require("request");
 
 const fs = require('fs')
@@ -74,9 +78,10 @@ type Session = WASocket & {
   store?: Store;
 };
 
-interface SessionOpenAi extends OpenAI {
+interface SessionOpenAi extends OpenAIApi {
   id?: number;
 }
+
 const sessionsOpenAi: SessionOpenAi[] = [];
 
 interface ImessageUpsert {
@@ -672,7 +677,9 @@ const handleOpenAi = async (
 
   if (!bodyMessage) return;
 
+
   let { prompt } = await ShowWhatsAppService(wbot.id, ticket.companyId);
+
 
   if (!prompt && !isNil(ticket?.queue?.prompt)) {
     prompt = ticket.queue.prompt;
@@ -682,14 +689,24 @@ const handleOpenAi = async (
 
   if (msg.messageStubType) return;
 
-  const publicFolder: string = path.resolve(__dirname, "..", "..", "..", "public");
+  const publicFolder: string = path.resolve(
+    __dirname,
+    "..",
+    "..",
+    "..",
+    "public"
+  );
 
-  let openai: OpenAI | any;
-  const openAiIndex = sessionsOpenAi.findIndex(s => s.id === ticket.id);
+  let openai: SessionOpenAi;
+  const openAiIndex = sessionsOpenAi.findIndex(s => s.id === wbot.id);
+
 
   if (openAiIndex === -1) {
-    openai = new OpenAI({ apiKey: prompt.apiKey });
-    openai.id = ticket.id;
+    const configuration = new Configuration({
+      apiKey: prompt.apiKey
+    });
+    openai = new OpenAIApi(configuration);
+    openai.id = wbot.id;
     sessionsOpenAi.push(openai);
   } else {
     openai = sessionsOpenAi[openAiIndex];
@@ -701,145 +718,145 @@ const handleOpenAi = async (
     limit: prompt.maxMessages
   });
 
-  const promptSystem = `Nas respostas utilize o nome ${sanitizeName(contact.name || "Amigo(a)")} para identificar o cliente.\nSua resposta deve usar no máximo ${prompt.maxTokens} tokens e cuide para não truncar o final.\nSempre que possível, mencione o nome dele para ser mais personalizado o atendimento e mais educado. Quando a resposta requer uma transferência para o setor de atendimento, comece sua resposta com 'Ação: Transferir para o setor de atendimento'.\n${prompt.prompt}\n`;
+  const promptSystem = `Nas respostas utilize o nome ${sanitizeName(
+    contact.name || "Amigo(a)"
+  )} para identificar o cliente.\nSua resposta deve usar no máximo ${prompt.maxTokens
+    } tokens e cuide para não truncar o final.\nSempre que possível, mencione o nome dele para ser mais personalizado o atendimento e mais educado. Quando a resposta requer uma transferência para o setor de atendimento, comece sua resposta com 'Ação: Transferir para o setor de atendimento'.\n
+  ${prompt.prompt}\n`;
 
-  let messagesOpenAi: { role: string; content: string }[] = [];
+  let messagesOpenAi: ChatCompletionRequestMessage[] = [];
 
   if (msg.message?.conversation || msg.message?.extendedTextMessage?.text) {
+    messagesOpenAi = [];
     messagesOpenAi.push({ role: "system", content: promptSystem });
-    for (let i = 0; i < Math.min(prompt.maxMessages, messages.length); i++) {
+    for (
+      let i = 0;
+      i < Math.min(prompt.maxMessages, messages.length);
+      i++
+    ) {
       const message = messages[i];
       if (message.mediaType === "chat") {
-        messagesOpenAi.push({
-          role: message.fromMe ? "assistant" : "user",
-          content: message.body
-        });
+        if (message.fromMe) {
+          messagesOpenAi.push({ role: "assistant", content: message.body });
+        } else {
+          messagesOpenAi.push({ role: "user", content: message.body });
+        }
       }
     }
-    messagesOpenAi.push({ role: "user", content: bodyMessage });
+    messagesOpenAi.push({ role: "user", content: bodyMessage! });
 
-    try {
-      const chat = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo-1106",
-        messages: messagesOpenAi,
-        max_tokens: prompt.maxTokens,
-        temperature: prompt.temperature
+    const chat = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-1106",
+      messages: messagesOpenAi,
+      max_tokens: prompt.maxTokens,
+      temperature: prompt.temperature
+    });
+
+    let response = chat.data.choices[0].message?.content;
+
+    if (response?.includes("Ação: Transferir para o setor de atendimento")) {
+      await transferQueue(prompt.queueId, ticket, contact);
+      response = response
+        .replace("Ação: Transferir para o setor de atendimento", "")
+        .trim();
+    }
+
+    if (prompt.voice === "texto") {
+      const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
+        text: response!
       });
-
-      console.log("OpenAI response:", chat);
-
-      if (!chat.data || !chat.data.choices || chat.data.choices.length === 0) {
-        console.error("No choices returned from OpenAI API");
-        return; // Handle this case
-      }
-
-      let response = chat.data.choices[0].message?.content;
-
-      if (response?.includes("Ação: Transferir para o setor de atendimento")) {
-        await transferQueue(prompt.queueId, ticket, contact);
-        response = response.replace("Ação: Transferir para o setor de atendimento", "").trim();
-      }
-
-      if (prompt.voice === "texto") {
-        const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
-          text: response!
-        });
-        await verifyMessage(sentMessage!, ticket, contact);
-      } else {
-        const fileNameWithOutExtension = `${ticket.id}_${Date.now()}`;
-        await convertTextToSpeechAndSaveToFile(
-          keepOnlySpecifiedChars(response!),
-          `${publicFolder}/${fileNameWithOutExtension}`,
-          prompt.voiceKey,
-          prompt.voiceRegion,
-          prompt.voice,
-          "mp3"
-        );
-
-        const sendMessage = await wbot.sendMessage(msg.key.remoteJid!, {
-          audio: { url: `${publicFolder}/${fileNameWithOutExtension}.mp3` },
-          mimetype: "audio/mpeg",
-          ptt: true
-        });
-        await verifyMediaMessage(sendMessage!, ticket, contact);
-        deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.mp3`);
-        deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.wav`);
-      }
-    } catch (error) {
-      console.error("Error during OpenAI API call:", error);
+      await verifyMessage(sentMessage!, ticket, contact);
+    } else {
+      const fileNameWithOutExtension = `${ticket.id}_${Date.now()}`;
+      convertTextToSpeechAndSaveToFile(
+        keepOnlySpecifiedChars(response!),
+        `${publicFolder}/${fileNameWithOutExtension}`,
+        prompt.voiceKey,
+        prompt.voiceRegion,
+        prompt.voice,
+        "mp3"
+      ).then(async () => {
+        try {
+          const sendMessage = await wbot.sendMessage(msg.key.remoteJid!, {
+            audio: { url: `${publicFolder}/${fileNameWithOutExtension}.mp3` },
+            mimetype: "audio/mpeg",
+            ptt: true
+          });
+          await verifyMediaMessage(sendMessage!, ticket, contact);
+          deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.mp3`);
+          deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.wav`);
+        } catch (error) {
+          console.log(`Erro para responder com audio: ${error}`);
+        }
+      });
     }
   } else if (msg.message?.audioMessage) {
     const mediaUrl = mediaSent!.mediaUrl!.split("/").pop();
     const file = fs.createReadStream(`${publicFolder}/${mediaUrl}`) as any;
+    const transcription = await openai.createTranscription(file, "whisper-1");
 
-    try {
-      const transcription = await openai.audio.transcriptions.create({
-        model: "whisper-1",
-        file: file,
-      });
-
-      messagesOpenAi = [];
-      messagesOpenAi.push({ role: "system", content: promptSystem });
-      for (let i = 0; i < Math.min(prompt.maxMessages, messages.length); i++) {
-        const message = messages[i];
-        if (message.mediaType === "chat") {
-          messagesOpenAi.push({
-            role: message.fromMe ? "assistant" : "user",
-            content: message.body
-          });
+    messagesOpenAi = [];
+    messagesOpenAi.push({ role: "system", content: promptSystem });
+    for (
+      let i = 0;
+      i < Math.min(prompt.maxMessages, messages.length);
+      i++
+    ) {
+      const message = messages[i];
+      if (message.mediaType === "chat") {
+        if (message.fromMe) {
+          messagesOpenAi.push({ role: "assistant", content: message.body });
+        } else {
+          messagesOpenAi.push({ role: "user", content: message.body });
         }
       }
-      messagesOpenAi.push({ role: "user", content: transcription.text });
+    }
+    messagesOpenAi.push({ role: "user", content: transcription.data.text });
+    const chat = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-1106",
+      messages: messagesOpenAi,
+      max_tokens: prompt.maxTokens,
+      temperature: prompt.temperature
+    });
+    let response = chat.data.choices[0].message?.content;
 
-      const chat = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo-1106",
-        messages: messagesOpenAi,
-        max_tokens: prompt.maxTokens,
-        temperature: prompt.temperature
+    if (response?.includes("Ação: Transferir para o setor de atendimento")) {
+      await transferQueue(prompt.queueId, ticket, contact);
+      response = response
+        .replace("Ação: Transferir para o setor de atendimento", "")
+        .trim();
+    }
+    if (prompt.voice === "texto") {
+      const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
+        text: response!
       });
-
-      console.log("OpenAI response (audio):", chat);
-
-      if (!chat.data || !chat.data.choices || chat.data.choices.length === 0) {
-        console.error("No choices returned from OpenAI API for audio.");
-        return; // Handle this case
-      }
-
-      let response = chat.data.choices[0].message?.content;
-
-      if (response?.includes("Ação: Transferir para o setor de atendimento")) {
-        await transferQueue(prompt.queueId, ticket, contact);
-        response = response.replace("Ação: Transferir para o setor de atendimento", "").trim();
-      }
-      if (prompt.voice === "texto") {
-        const sentMessage = await wbot.sendMessage(msg.key.remoteJid!, {
-          text: `\u200e ${response!}`
-        });
-        //await verifyMessage(sentMessage!, ticket, contact);
-      } else {
-        const fileNameWithOutExtension = `${ticket.id}_${Date.now()}`;
-        await convertTextToSpeechAndSaveToFile(
-          keepOnlySpecifiedChars(response!),
-          `${publicFolder}/${fileNameWithOutExtension}`,
-          prompt.voiceKey,
-          prompt.voiceRegion,
-          prompt.voice,
-          "mp3"
-        );
-
-        const sendMessage = await wbot.sendMessage(msg.key.remoteJid!, {
-          audio: { url: `${publicFolder}/${fileNameWithOutExtension}.mp3` },
-          mimetype: "audio/mpeg",
-          ptt: true
-        });
-        await verifyMediaMessage(sendMessage!, ticket, contact);
-        deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.mp3`);
-        deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.wav`);
-      }
-    } catch (error) {
-      console.error("Error handling audio message:", error);
+      await verifyMessage(sentMessage!, ticket, contact);
+    } else {
+      const fileNameWithOutExtension = `${ticket.id}_${Date.now()}`;
+      convertTextToSpeechAndSaveToFile(
+        keepOnlySpecifiedChars(response!),
+        `${publicFolder}/${fileNameWithOutExtension}`,
+        prompt.voiceKey,
+        prompt.voiceRegion,
+        prompt.voice,
+        "mp3"
+      ).then(async () => {
+        try {
+          const sendMessage = await wbot.sendMessage(msg.key.remoteJid!, {
+            audio: { url: `${publicFolder}/${fileNameWithOutExtension}.mp3` },
+            mimetype: "audio/mpeg",
+            ptt: true
+          });
+          await verifyMediaMessage(sendMessage!, ticket, contact);
+          deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.mp3`);
+          deleteFileSync(`${publicFolder}/${fileNameWithOutExtension}.wav`);
+        } catch (error) {
+          console.log(`Erro para responder com audio: ${error}`);
+        }
+      });
     }
   }
+  messagesOpenAi = [];
 };
 
 
@@ -854,6 +871,7 @@ const transferQueue = async (
     companyId: ticket.companyId
   });
 };
+
 
 const verifyMediaMessage = async (
   msg: proto.IWebMessageInfo,
@@ -874,11 +892,39 @@ const verifyMediaMessage = async (
   }
 
   try {
+
+    const folder = `public/company${ticket.companyId}`;
+    if (!fs.existsSync(folder)) {
+      fs.mkdirSync(folder);
+      fs.chmodSync(folder, 0o777)
+    }
+
     await writeFileAsync(
-      join(__dirname, "..", "..", "..", "public", media.filename),
+      join(__dirname, "..", "..", "..", folder, media.filename),
       media.data,
       "base64"
     );
+
+    await new Promise<void>((resolve, reject) => {
+      if (media.filename.includes('.ogg')) {
+      ffmpeg(folder + '/' + media.filename)
+        .toFormat('mp3')
+        .save((folder + '/' + media.filename).replace('.ogg', '.mp3'))
+        .on('end', () => {
+          logger.info('Conversão concluída!');
+          resolve();
+        })
+        .on('error', (err) => {
+          logger.error('Erro durante a conversão:', err);
+          reject(err);
+        });
+      } else {
+          logger.info('Não é necessário converter o arquivo. Não é formato OGG.');
+          resolve(); // Resolve immediately since no conversion is needed.
+      }
+    });
+
+
   } catch (err) {
     Sentry.captureException(err);
     logger.error(err);
@@ -1087,8 +1133,6 @@ const verifyQueue = async (
     ticket.companyId
   )
 
-
-
   if (queues.length === 1) {
 
     const sendGreetingMessageOneQueues = await Setting.findOne({
@@ -1160,14 +1204,27 @@ const verifyQueue = async (
 
     return;
   }
+  
+  	const lastMessage = await Message.findOne({
+    where: {
+      ticketId: ticket.id,
+      fromMe: true
+    },
+    order: [["createdAt", "DESC"]]
+  });
+	
 
     // REGRA PARA DESABILITAR O BOT PARA ALGUM CONTATO
     if (contact.disableBot) {
       return;
     }
 
-  const selectedOption = getBodyMessage(msg);
-  const choosenQueue = queues[+selectedOption - 1];
+	const selectedOption = getBodyMessage(msg);
+  
+    const choosenQueue = /\*\[\s*\d+\s*\]\*\s*-\s*.*/g.test(lastMessage?.body)
+    ? queues[+selectedOption - 1]
+    : undefined;
+	
 
   const buttonActive = await Setting.findOne({
     where: {
@@ -1240,40 +1297,65 @@ const verifyQueue = async (
     });
 
 
-    /* Tratamento para envio de mensagem quando a fila está fora do expediente */
-    if (choosenQueue.options.length === 0) {
-      const queue = await Queue.findByPk(choosenQueue.id);
-      const { schedules }: any = queue;
-      const now = moment();
-      const weekday = now.format("dddd").toLowerCase();
-      let schedule;
-      if (Array.isArray(schedules) && schedules.length > 0) {
-        schedule = schedules.find((s) => s.weekdayEn === weekday && s.startTime !== "" && s.startTime !== null && s.endTime !== "" && s.endTime !== null);
+/* Tratamento para envio de mensagem quando a fila está fora do expediente */
+if (choosenQueue.options.length === 0) {
+  const queue = await Queue.findByPk(choosenQueue.id);
+  const { schedules }: any = queue;
+  const now = moment();
+  const weekday = now.format("dddd").toLowerCase();
+  let schedule;
+
+  if (Array.isArray(schedules) && schedules.length > 0) {
+    schedule = schedules.find((s) => s.weekdayEn === weekday && s.startTimeA !== "" && s.startTimeA !== null && s.endTimeB !== "" && s.endTimeB !== null);
+  }
+
+  if (queue.outOfHoursMessage !== null && queue.outOfHoursMessage !== "" && !isNil(schedule)) {
+    const startTimeA = moment(schedule.startTimeA, "HH:mm");
+    const endTimeA = moment(schedule.endTimeA, "HH:mm");
+    const startTimeB = schedule.startTimeB ? moment(schedule.startTimeB, "HH:mm") : null;
+    const endTimeB = schedule.endTimeB ? moment(schedule.endTimeB, "HH:mm") : null;
+
+    const isWithinBusinessHours = (now.isBetween(startTimeA, endTimeA, null, '[]') || (startTimeB && endTimeB && now.isBetween(startTimeB, endTimeB, null, '[]')));
+
+    if (!isWithinBusinessHours) {
+      // Verifica se o status do ticket é "open" ou "pendent" ou "assigned"
+      if (ticket.status === "open" || ticket.status === "pendent" || ticket.status === "assigned") {
+        // Envia a mensagem de fora do expediente
+        const body = formatBody(`\u200e${queue.outOfHoursMessage}`, ticket.contact);
+        console.log('body222', body);
+
+        // Envia a mensagem
+        const sentMessage = await wbot.sendMessage(
+          `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
+          text: body,
+        });
+
+        // Verifica a mensagem
+        await verifyMessage(sentMessage, ticket, contact);
+
+        // Finaliza o ticket com o status 'closed'
+        await UpdateTicketService({
+          ticketData: { status: "closed", queueId: null, chatbot },
+          ticketId: ticket.id,
+          companyId: ticket.companyId,
+        });
+
+        // Envia a mensagem de finalização
+        const finalizationMessage = "Seu ticket foi finalizado porque estamos *Offline* no momento.";
+        await wbot.sendMessage(
+          `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
+          text: finalizationMessage,
+        });
       }
+    } else if (ticket.status === "assigned") {
+      // Prevent looping by checking if the ticket is assigned
+      console.log("Ticket is assigned, no need to send out-of-hours message.");
+      return; // Skip further processing if assigned
+    }
+  }
 
-      if (queue.outOfHoursMessage !== null && queue.outOfHoursMessage !== "" && !isNil(schedule)) {
-        const startTime = moment(schedule.startTime, "HH:mm");
-        const endTime = moment(schedule.endTime, "HH:mm");
 
 
-
-        if (now.isBefore(startTime) || now.isAfter(endTime)) {
-          const body = formatBody(`\u200e ${queue.outOfHoursMessage}\n\n*[ # ]* - Voltar ao Menu Principal`, ticket.contact);
-          console.log('body222', body)
-          const sentMessage = await wbot.sendMessage(
-            `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`, {
-            text: body,
-          }
-          );
-          await verifyMessage(sentMessage, ticket, contact);
-          await UpdateTicketService({
-            ticketData: { queueId: null, chatbot },
-            ticketId: ticket.id,
-            companyId: ticket.companyId,
-          });
-          return;
-        }
-      }
 
 
       //inicia integração dialogflow/n8n
@@ -1383,7 +1465,8 @@ export const verifyRating = (ticketTraking: TicketTraking) => {
 export const handleRating = async (
   rate: number,
   ticket: Ticket,
-  ticketTraking: TicketTraking
+  ticketTraking: TicketTraking,
+  contact: Contact
 ) => {
   const io = getIO();
 
@@ -1410,7 +1493,8 @@ export const handleRating = async (
 
   if (complationMessage) {
     const body = formatBody(`\u200e${complationMessage}`, ticket.contact);
-    await SendWhatsAppMessage({ body, ticket });
+    const msg = await SendWhatsAppMessage({ body, ticket });
+    await verifyMessage(msg, ticket, contact);
   }
 
   await ticketTraking.update({
@@ -1418,12 +1502,13 @@ export const handleRating = async (
     rated: true,
   });
 
+  // Manter a fila no ticket ao fechá-lo
   await ticket.update({
-    queueId: null,
-    chatbot: null,
+    // Remover esses campos, já que queremos manter a fila
     queueOptionId: null,
     userId: null,
-    status: "closed",
+    status: "closed", 
+    // Não removemos queueId, pois a fila deve ser mantida
   });
 
   io.to(`company-${ticket.companyId}-open`)
@@ -1443,6 +1528,7 @@ export const handleRating = async (
       ticketId: ticket.id,
     });
 };
+
 
 const handleChartbot = async (ticket: Ticket, msg: WAMessage, wbot: Session, dontReadTheFirstQuestion = false) => {
   const queue = await Queue.findByPk(ticket.queueId, {
@@ -1838,7 +1924,6 @@ const handleMessage = async (
   wbot: Session,
   companyId: number
 ): Promise<void> => {
-
   let mediaSent: Message | undefined;
 
   if (!isValidMsg(msg)) return;
@@ -1848,18 +1933,12 @@ const handleMessage = async (
 
     const isGroup = msg.key.remoteJid?.endsWith("@g.us");
 
-    if (isGroup) {
-      const msgIsGroupBlock = await Setting.findOne({
-        where: {
-          companyId,
-          key: "CheckMsgIsGroup",
-        },
-      });
-      
-      if ( !msgIsGroupBlock || msgIsGroupBlock.value === "enabled") {
-        return;
+    const msgIsGroupBlock = await Setting.findOne({
+      where: {
+        companyId,
+        key: "CheckMsgIsGroup"
       }
-    }
+    });
 
     const bodyMessage = getBodyMessage(msg);
     const msgType = getTypeMessage(msg);
@@ -1878,14 +1957,14 @@ const handleMessage = async (
         !hasMedia &&
         msgType !== "conversation" &&
         msgType !== "extendedTextMessage" &&
-        msgType !== "reactionMessage" &&
         msgType !== "vcard"
       )
         return;
-      msgContact = await getContactMessage(msg, wbot);
-    } else {
-      msgContact = await getContactMessage(msg, wbot);
     }
+
+    msgContact = await getContactMessage(msg, wbot);
+
+    if (msgIsGroupBlock?.value === "enabled" && isGroup) return;
 
     if (isGroup) {
       groupContact = await wbotMutex.runExclusive(async () => {
@@ -1940,19 +2019,20 @@ const handleMessage = async (
 
     await provider(ticket, msg, companyId, contact, wbot as WASocket);
 
-    // voltar para o menu inicial
-
     //DESABILITADO INTERAÇÕES NOS GRUPOS USANDO O && !isGroup e if (isGroup || contact.disableBot)//
-
-    if (bodyMessage == "#" && !isGroup) {
-      await ticket.update({
-        queueOptionId: null,
-        chatbot: false,
-        queueId: null,
-      });
-      await verifyQueue(wbot, msg, ticket, ticket.contact);
-      return;
-    }
+	
+	// voltar para o menu inicial
+	
+    // voltar para o menu inicial
+    // if (bodyMessage === "#") {
+    //   await ticket.update({
+    //     queueOptionId: null,
+    //     chatbot: false,
+    //     queueId: null
+    //   });
+    //   await verifyQueue(wbot, msg, ticket, ticket.contact);
+    //   return;
+    // 
 
 
     const ticketTraking = await FindOrCreateATicketTrakingService({
@@ -1961,12 +2041,53 @@ const handleMessage = async (
       whatsappId: whatsapp?.id
     });
 
+
     try {
-      if (!msg.key.fromMe && !contact.isGroup){
+       if (!msg.key.fromMe && !contact.isGroup) {
+        /**
+         * Tratamento para avaliação do atendente
+         */
 
-        if (ticketTraking !== null && verifyRating(ticketTraking)) {
+        // // dev Ricardo: insistir a responder avaliação
+        // const rate_ = Number(bodyMessage);
 
-          handleRating(parseFloat(bodyMessage), ticket, ticketTraking);
+        // if (
+        //   (ticket?.lastMessage.includes("_Insatisfeito_") ||
+        //     ticket?.lastMessage.includes(
+        //       "Por favor avalie nosso atendimento."
+        //     )) &&
+        //   !isFinite(rate_)
+        // ) {
+        //   const debouncedSentMessage = debounce(
+        //     async () => {
+        //       await wbot.sendMessage(
+        //         `${ticket.contact.number}@${
+        //           ticket.isGroup ? "g.us" : "s.whatsapp.net"
+        //         }`,
+        //         {
+        //           text: "Por favor avalie nosso atendimento."
+        //         }
+        //       );
+        //     },
+        //     1000,
+        //     ticket.id
+        //   );
+        //   debouncedSentMessage();
+        //   return;
+        // }
+        // // dev Ricardo
+
+        if (
+          ticketTraking !== null &&
+          isNumeric(bodyMessage) &&
+          verifyRating(ticketTraking)
+        ) {
+          await handleRating(
+            parseFloat(bodyMessage),
+            ticket,
+            ticketTraking,
+            contact
+          );
           return;
         }
       }
@@ -1974,6 +2095,7 @@ const handleMessage = async (
       Sentry.captureException(e);
       console.log(e);
     }
+	
 
     // Atualiza o ticket se a ultima mensagem foi enviada por mim, para que possa ser finalizado. 
     try {
@@ -2014,7 +2136,8 @@ const handleMessage = async (
           !isNil(currentSchedule) &&
           (!currentSchedule || currentSchedule.inActivity === false)
         ) {
-          const body = `\u200e ${whatsapp.outOfHoursMessage}`;
+          const body = `\u200e ${whatsapp.outOfHoursMessage},
+            contact`;
 
           console.log('body9341023', body)
           const debouncedSentMessage = debounce(
@@ -2053,10 +2176,10 @@ const handleMessage = async (
             schedule = schedules.find(
               s =>
                 s.weekdayEn === weekday &&
-                s.startTime !== "" &&
-                s.startTime !== null &&
-                s.endTime !== "" &&
-                s.endTime !== null
+                s.startTimeA !== "" &&
+                s.startTimeA !== null &&
+                s.endTimeA !== "" &&
+                s.endTimeA !== null
             );
           }
 
@@ -2066,11 +2189,13 @@ const handleMessage = async (
             queue.outOfHoursMessage !== "" &&
             !isNil(schedule)
           ) {
-            const startTime = moment(schedule.startTime, "HH:mm");
-            const endTime = moment(schedule.endTime, "HH:mm");
+            const startTimeA = moment(schedule.startTimeA, "HH:mm");
+            const endTimeA = moment(schedule.endTimeA, "HH:mm");
+			const startTimeB = moment(schedule.startTimeB, "HH:mm");
+            const endTimeB = moment(schedule.endTimeB, "HH:mm");
 
-            if (now.isBefore(startTime) || now.isAfter(endTime)) {
-              const body = `${queue.outOfHoursMessage}`;
+            if (now.isBefore(startTimeA) || now.isAfter(endTimeA) && (now.isBefore(startTimeB) || now.isAfter(endTimeB))) {
+              const body = `${queue.outOfHoursMessage}, contact`;
               console.log('body:23801', body)
               const debouncedSentMessage = debounce(
                 async () => {
@@ -2091,18 +2216,6 @@ const handleMessage = async (
           }
         }
 
-      }
-    } catch (e) {
-      Sentry.captureException(e);
-      console.log(e);
-    }
-
-    try {
-      if (!msg.key.fromMe) {
-        if (ticketTraking !== null && verifyRating(ticketTraking)) {
-          handleRating(parseFloat(bodyMessage), ticket, ticketTraking);
-          return;
-        }
       }
     } catch (e) {
       Sentry.captureException(e);
@@ -2206,10 +2319,10 @@ const handleMessage = async (
           schedule = schedules.find(
             s =>
               s.weekdayEn === weekday &&
-              s.startTime !== "" &&
-              s.startTime !== null &&
-              s.endTime !== "" &&
-              s.endTime !== null
+              s.startTimeA !== "" &&
+              s.startTimeA !== null &&
+              s.endTimeA !== "" &&
+              s.endTimeA !== null
           );
         }
 
@@ -2219,10 +2332,12 @@ const handleMessage = async (
           queue.outOfHoursMessage !== "" &&
           !isNil(schedule)
         ) {
-          const startTime = moment(schedule.startTime, "HH:mm");
-          const endTime = moment(schedule.endTime, "HH:mm");
+          const startTimeA = moment(schedule.startTimeA, "HH:mm");
+          const endTimeA = moment(schedule.endTimeA, "HH:mm");
+          const startTimeB = moment(schedule.startTimeB, "HH:mm");
+          const endTimeB = moment(schedule.endTimeB, "HH:mm");		  
 
-          if (now.isBefore(startTime) || now.isAfter(endTime)) {
+          if (now.isBefore(startTimeA) || now.isAfter(endTimeA) && (now.isBefore(startTimeB) || now.isAfter(endTimeB))) {
             const body = queue.outOfHoursMessage;
             console.log('body158964153', body)
             const debouncedSentMessage = debounce(

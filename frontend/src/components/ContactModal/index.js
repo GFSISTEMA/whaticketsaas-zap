@@ -53,13 +53,20 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
+const phoneRegExp =
+  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+  
 const ContactSchema = Yup.object().shape({
-	name: Yup.string()
-		.min(2, "Too Short!")
-		.max(50, "Too Long!")
-		.required("Required"),
-	number: Yup.string().min(8, "Too Short!").max(50, "Too Long!"),
-	email: Yup.string().email("Invalid email"),
+  name: Yup.string()
+    .min(2, "Too Short!")
+    .max(50, "Too Long!")
+    .required("Required"),
+  number: Yup.string()
+    .min(12, "Número inválido")
+    .max(16, "Número inválido")
+    .matches(phoneRegExp, "Número inválido")
+    .required("Informe o número"),
+  email: Yup.string().email("Email inválido"),
 });
 
 const ContactModal = ({ open, onClose, contactId, initialValues, onSave }) => {

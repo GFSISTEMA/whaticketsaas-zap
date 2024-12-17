@@ -14,7 +14,6 @@ import SearchIcon from "@material-ui/icons/Search";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import Typography from "@material-ui/core/Typography";
 
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
@@ -229,17 +228,6 @@ const Quickemessages = () => {
         aria-labelledby="form-dialog-title"
         quickemessageId={selectedQuickemessage && selectedQuickemessage.id}
       />
-      <Paper className={classes.redBox} variant="outlined" style={{ backgroundColor: '#DCF8C6' }}>
-        <Typography variant="body1" style={{ color: '#075E54' }}>
-          {i18n.t("paper.quickmessages.notice")}
-        </Typography>
-        <Typography variant="body1" style={{ color: '#128C7E' }}>
-          {i18n.t("paper.quickmessages.usefulLinks")}
-          <br />
-          {i18n.t("paper.quickmessages.helpVideos")}: <a href="/helps" style={{ color: '#25D366' }}>{i18n.t("paper.queues.help")}</a>
-        </Typography>
-      </Paper>
-      
       <MainHeader>
         <Grid style={{ width: "99.6%" }} container>
           <Grid xs={12} sm={8} item>

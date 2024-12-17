@@ -9,6 +9,7 @@ import Signup from "../pages/Signup/";
 import Login from "../pages/Login/";
 import Connections from "../pages/Connections/";
 import SettingsCustom from "../pages/SettingsCustom/";
+import Relatorios from "../pages/Relatórios";
 import Financeiro from "../pages/Financeiro/";
 import Users from "../pages/Users";
 import Contacts from "../pages/Contacts/";
@@ -38,6 +39,8 @@ import Subscription from "../pages/Subscription/";
 import Files from "../pages/Files/";
 import Prompts from "../pages/Prompts";
 import QueueIntegration from "../pages/QueueIntegration";
+import LogPlw from "../pages/LogPlw";
+
 import ForgetPassword from "../pages/ForgetPassWord/"; // Reset PassWd
 
 const Routes = () => {
@@ -99,6 +102,7 @@ const Routes = () => {
                 <Route exact path="/users" component={Users} isPrivate />
                 <Route exact path="/files" component={Files} isPrivate />
                 <Route exact path="/prompts" component={Prompts} isPrivate />
+				<Route exact path="/logplw" component={LogPlw} isPrivate />
                 <Route exact path="/queue-integration" component={QueueIntegration} isPrivate />
 					{/*<Route exact path="/kanban-schedules" component={kanbanSchedules} isPrivate />*/}
                 <Route
@@ -119,6 +123,12 @@ const Routes = () => {
                   component={Kanban}
                   isPrivate
                 />
+				<Route
+                  exact
+                  path="/relatorios"
+                  component={Relatorios}
+                  isPrivate
+                />				
                 <Route
                   exact
                   path="/financeiro"

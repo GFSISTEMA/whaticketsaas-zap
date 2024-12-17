@@ -1,14 +1,14 @@
-import React, { useContext, useState } from "react";
-import toastError from "../../errors/toastError";
+import React, { useContext, useEffect } from "react";
 import { Checkbox } from "@mui/material";
 import { ForwardMessageContext } from "../../context/ForwarMessage/ForwardMessageContext";
 
 const SelectMessageCheckbox = ({ message }) => {
-    const [isChecked, setIsChecked] = useState(false);
-    const { showSelectMessageCheckbox, setSelectedMessages, selectedMessages } = useContext(ForwardMessageContext);
+    const { showSelectMessageCheckbox, selectedMessages, setSelectedMessages, resetSelection } = useContext(ForwardMessageContext);
 
-    const handleSelectMessage = (e, message) => {
-        setIsChecked(e.target.checked);
+    // Verifica se a mensagem está na lista de selecionadas
+    const isChecked = selectedMessages.some((m) => m.id === message.id);
+
+    const handleSelectMessage = (e) => {
         const updatedList = e.target.checked
             ? [...selectedMessages, message]  // Adiciona mensagem se marcada
             : selectedMessages.filter((m) => m.id !== message.id);  // Remove mensagem se desmarcada
@@ -16,11 +16,18 @@ const SelectMessageCheckbox = ({ message }) => {
         setSelectedMessages(updatedList);
     };
 
-    if (showSelectMessageCheckbox) {
-        return <Checkbox color="primary" checked={isChecked} onChange={(e) => handleSelectMessage(e, message)} />;
-    } else {
+    // Reseta o checkbox quando o resetSelection é chamado
+    useEffect(() => {
+        if (!showSelectMessageCheckbox) {
+            setSelectedMessages([]);  // Limpa a seleção se o checkbox for ocultado
+        }
+    }, [showSelectMessageCheckbox, setSelectedMessages]);
+
+    if (!showSelectMessageCheckbox) {
         return null;
     }
+
+    return <Checkbox color="primary" checked={isChecked} onChange={handleSelectMessage} />;
 };
 
 export default SelectMessageCheckbox;

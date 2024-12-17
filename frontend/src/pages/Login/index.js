@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     },
     leftSide: {
         flex: 1,
-        backgroundImage: "url(https://i.imgur.com/7Jdv8MT.jpeg)",
+        backgroundImage: "url(https://i.imgur.com/Yu3cnE9.png)",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         display: 'flex',
@@ -91,8 +91,7 @@ const Login = () => {
     const [viewregister, setviewregister] = useState('disabled');
 
     const handleChangeInput = e => {
-        const { name, value } = e.target;
-        setUser({ ...user, [name]: value.trim() });
+        setUser({ ...user, [e.target.name]: e.target.value });
     };
 
     useEffect(() => {

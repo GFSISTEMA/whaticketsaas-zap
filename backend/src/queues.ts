@@ -267,7 +267,7 @@ async function handleSendScheduledMessage(job) {
 
     let filePath = null;
     if (schedule.mediaPath) {
-      filePath = path.resolve("public", schedule.mediaPath);
+      filePath = path.resolve("public", `company${schedule.companyId}`, schedule.mediaPath);
     }
 
     await SendMessage(whatsapp, {
@@ -737,8 +737,8 @@ async function handleDispatchCampaign(job) {
     }
 
     if (campaign.mediaPath) {
-      const publicFolder = path.resolve(__dirname, "..", "public");
-      const filePath = path.join(publicFolder, campaign.mediaPath);
+            const publicFolder = path.resolve(__dirname, "..", "public");
+            const filePath = path.join(publicFolder, `company${campaign.companyId}`, campaign.mediaPath);
 
       const options = await getMessageOptions(campaign.mediaName, filePath, body);
       if (Object.keys(options).length) {

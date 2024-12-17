@@ -20,7 +20,6 @@ import MenuIcon from "@material-ui/icons/Menu";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import CachedIcon from "@material-ui/icons/Cached";
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';  // Importar o ícone do WhatsApp
 
 import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
@@ -191,6 +190,15 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   const { colorMode } = useContext(ColorModeContext);
   const greaterThenSm = useMediaQuery(theme.breakpoints.up("sm"));
 
+  // Definindo os logos para modo claro e escuro
+  const logoLight = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/interno.png`;
+  const logoDark = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/logo_w.png`;
+
+  // Definindo o logo inicial com base no modo de tema atual
+  const initialLogo = theme.palette.type === 'light' ? logoLight : logoDark;
+  const [logoImg, setLogoImg] = useState(initialLogo);
+
+
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
 
   const { dateToClient } = useDate();
@@ -252,7 +260,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   }, []);
 
   useEffect(() => {
-    if (document.body.offsetWidth < 600) {
+    if (document.body.offsetWidth < 1000) {
       setDrawerVariant("temporary");
     } else {
       setDrawerVariant("permanent");
@@ -323,40 +331,20 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     }
   };
 
+  useEffect(() => {
+    // Atualiza o logo sempre que o modo do tema muda
+    setLogoImg(theme.palette.type === 'light' ? logoLight : logoDark);
+  }, [theme.palette.type]);
+
   const toggleColorMode = () => {
     colorMode.toggleColorMode();
-  }
-
-  const getGreeting = () => {
-    const hour = moment().hour();
-    if (hour < 12) {
-      return "Bom dia";
-    } else if (hour < 18) {
-      return "Boa tarde";
-    } else {
-      return "Boa noite";
-    }
-  };
-
-  const daysUntilDueDate = () => {
-    if (user?.company?.dueDate) {
-      const dueDate = moment(user?.company?.dueDate);
-      const now = moment();
-      const diff = dueDate.diff(now, 'days');
-      const formattedDueDate = dueDate.format('DD/MM/YYYY');
-      return diff > 0 ? `(Ativo até ${formattedDueDate} - Faltam ${diff} dias)` : `(Ativo até ${formattedDueDate} - Vencido)`;
-    }
-    return '';
+    setLogoImg((prevLogo) => (prevLogo === logoLight ? logoDark : logoLight));
   };
 
   if (loading) {
     return <BackdropLoading />;
   }
-  
-  	const logo = `${process.env.REACT_APP_BACKEND_URL}/public/logotipos/interno.png`;
-    const randomValue = Math.random(); // Generate a random number
-  
-    const logoWithRandom = `${logo}?r=${randomValue}`;
+
 
   return (
     <div className={classes.root}>
@@ -372,7 +360,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
         open={drawerOpen}
       >
         <div className={classes.toolbarIcon}>
-          <img src={logoWithRandom} style={{ margin: "0 auto" , width: "50%"}} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} />
+          <img src={`${logoImg}?r=${Math.random()}`} style={{ margin: "0 auto" , width: "50%"}} alt={`${process.env.REACT_APP_NAME_SYSTEM}`} />
           <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
             <ChevronLeftIcon />
           </IconButton>
@@ -414,54 +402,42 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             noWrap
             className={classes.title}
           >
-            {getGreeting()}
+            {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
             {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
               <>
-                , <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! {daysUntilDueDate()}
+                Olá <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! (Ativo até {dateToClient(user?.company?.dueDate)})
               </>
             ) : (
               <>
-                , <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
+                Olá  <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
               </>
             )}
           </Typography>
 
-          <IconButton 
-            edge="start" 
-            onClick={toggleColorMode}
-            style={{ marginLeft: 8 }}
-          >
+          <IconButton edge="start" onClick={toggleColorMode}>
             {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
           </IconButton>
 
           <NotificationsVolume
             setVolume={setVolume}
             volume={volume}
-            style={{ marginLeft: 8 }}
           />
 
           <IconButton
             onClick={handleRefreshPage}
             aria-label={i18n.t("mainDrawer.appBar.refresh")}
             color="inherit"
-            style={{ marginLeft: 8 }}
           >
             <CachedIcon style={{ color: "white" }} />
           </IconButton>
 
-          <div style={{ marginLeft: 8 }}>
-            {user.id && <NotificationsPopOver volume={volume} />}
-          </div>
+          {user.id && <NotificationsPopOver volume={volume} />}
 
-          <div style={{ marginLeft: 8 }}>
-            <AnnouncementsPopover />
-          </div>
+          <AnnouncementsPopover />
 
-          <div style={{ marginLeft: 8 }}>
-            <ChatPopover />
-          </div>
+          <ChatPopover />
 
-          <div style={{ marginLeft: 8, display: 'flex', alignItems: 'center' }}>
+          <div>
             <IconButton
               aria-label="account of current user"
               aria-controls="menu-appbar"
@@ -490,14 +466,8 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               <MenuItem onClick={handleOpenUserModal}>
                 {i18n.t("mainDrawer.appBar.user.profile")}
               </MenuItem>
-              <MenuItem onClick={() => window.open(`https://wa.me/${process.env.REACT_APP_NUMBER_SUPPORT}`, '_blank')}>
-                {i18n.t("mainDrawer.listItems.suporte")}
-              </MenuItem>
-              <MenuItem onClick={handleClickLogout}> 
-                {i18n.t("mainDrawer.appBar.user.logout")} 
-              </MenuItem>
             </Menu>
-            </div>
+          </div>
         </Toolbar>
       </AppBar>
       <main className={classes.content}>
@@ -510,4 +480,3 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 };
 
 export default LoggedInLayout;
-

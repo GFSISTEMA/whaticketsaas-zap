@@ -183,7 +183,7 @@ const Invoices = () => {
 
       ></SubscriptionModal>
       <MainHeader>
-      <Title>{i18n.t("fatura.title")}</Title>
+        <Title>Faturas</Title>
       </MainHeader>
       <Paper
         className={classes.mainPaper}
