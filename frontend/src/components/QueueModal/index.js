@@ -103,13 +103,13 @@ const QueueModal = ({ open, onClose, queueId }) => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   
     const [schedules, setSchedules] = useState([
-    { weekday: "queueModal.serviceHours.monday", weekdayEn: "monday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
-    { weekday: "queueModal.serviceHours.tuesday", weekdayEn: "tuesday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
-    { weekday: "queueModal.serviceHours.wednesday", weekdayEn: "wednesday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
-    { weekday: "queueModal.serviceHours.thursday", weekdayEn: "thursday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
-    { weekday: "queueModal.serviceHours.friday", weekdayEn: "friday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
-    { weekday: "queueModal.serviceHours.saturday", weekdayEn: "saturday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "00:00", endTimeB: "00:00", },
-    { weekday: "queueModal.serviceHours.sunday", weekdayEn: "sunday", startTimeA: "00:00", endTimeA: "00:00", startTimeB: "00:00", endTimeB: "00:00", },
+    { weekday: i18n.t("queueModal.serviceHours.monday"), weekdayEn: "monday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
+    { weekday: i18n.t("queueModal.serviceHours.tuesday"), weekdayEn: "tuesday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
+    { weekday: i18n.t("queueModal.serviceHours.wednesday"), weekdayEn: "wednesday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
+    { weekday: i18n.t("queueModal.serviceHours.thursday"), weekdayEn: "thursday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
+    { weekday: i18n.t("queueModal.serviceHours.friday"), weekdayEn: "friday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "13:30", endTimeB: "18:00", },
+    { weekday: i18n.t("queueModal.serviceHours.saturday"), weekdayEn: "saturday", startTimeA: "08:00", endTimeA: "12:00", startTimeB: "00:00", endTimeB: "00:00", },
+    { weekday: i18n.t("queueModal.serviceHours.sunday"), weekdayEn: "sunday", startTimeA: "00:00", endTimeA: "00:00", startTimeB: "00:00", endTimeB: "00:00", },
   ]);
   
   const [selectedPrompt, setSelectedPrompt] = useState(null);
