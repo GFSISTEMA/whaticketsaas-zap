@@ -103,7 +103,7 @@ export function CompanyForm(props) {
     setRecord((prev) => {
       if (moment(initialValue).isValid()) {
         initialValue.dueDate = moment(initialValue.dueDate).format(
-          "YYYY-MM-DD"
+          "DD-MM-YYYY"
         );
       }
       return {

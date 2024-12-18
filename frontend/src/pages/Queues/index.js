@@ -181,7 +181,24 @@ const Queues = () => {
         queueId={selectedQueue?.id}
       />
       <MainHeader>
-        <Title>{i18n.t("queues.title")}</Title>
+      <Paper className={classes.redBox} variant="outlined" style={{ backgroundColor: '#DCF8C6' }}>
+  <Typography variant="body1" style={{ color: '#075E54' }}>
+    <strong>Aviso:</strong> Para ativar a mensagem automática no Whaticket, adicione as filas e preencha os campos necessários. 
+    Isso é essencial para o funcionamento correto da automação. Se precisar de ajuda, consulte os links abaixo.
+  </Typography>
+  {/* Links úteis */}
+  <Typography variant="body1" style={{ color: '#128C7E' }}>
+    <strong>Links Úteis:</strong>
+    <br />
+    Videos de ajuda: <a href="/helps" style={{ color: '#25D366' }}>Ajuda</a>
+   </Typography>
+</Paper>
+
+
+
+<MainHeader>
+  
+      <Title>{i18n.t("queues.title")}</Title>
         <MainHeaderButtonsWrapper>
           <Button
             variant="contained"
