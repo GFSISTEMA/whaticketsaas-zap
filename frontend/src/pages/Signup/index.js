@@ -71,8 +71,11 @@ const UserSchema = Yup.object().shape({
 		.max(50, "Too Long!")
 		.required("Required"),
 	password: Yup.string().min(5, "Too Short!").max(50, "Too Long!"),
-	email: Yup.string().email("Invalid email").required("Required"),
-});
+	email: Yup.string()
+		.email("Invalid email")
+		.required("Required")
+		.matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Email cannot contain spaces"),
+	});
 
 const SignUp = () => {
 	const classes = useStyles();
@@ -202,6 +205,11 @@ const SignUp = () => {
 										helperText={touched.email && errors.email}
 										autoComplete="email"
 										required
+										onKeyDown={(e) => {
+											if (e.key === ' ') {
+												e.preventDefault();
+											}
+										}}
 									/>
 								</Grid>
 								
